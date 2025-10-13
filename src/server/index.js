@@ -39,6 +39,7 @@ app.get('/test-db', async (_req, res) => {
     const r = await pool.query('select now() as now');
     return res.json({ ok: true, now: r.rows[0].now });
   } catch (err) {
+    console.log('DATABASE_URL:', process.env.DATABASE_URL);
     console.error('DB test error:', {
       message: err?.message,
       code: err?.code,
@@ -54,6 +55,7 @@ app.get('/test-db', async (_req, res) => {
     });
   }
 });
+
 
 
 
