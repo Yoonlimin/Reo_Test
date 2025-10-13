@@ -9,6 +9,10 @@ export default function Login() {
   const navigate = useNavigate();
 
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  console.log('API:', API_URL);
+
+  const API_BASE = import.meta.env.VITE_PUBLIC_BASE_URL || "http://localhost:5173";
+  console.log('API BASE:', API_BASE);
 
 
   const [email, setEmail] = useState("");
