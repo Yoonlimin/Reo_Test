@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import pool from './db.js';
+
 import authRoutes from './routes/authRoutes.js';
 import uploadLogoRoute from './routes/uploadLogo.js';
 import getLogoRoute from './routes/getLogo.js';
@@ -31,6 +33,18 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json({ limit: '50mb' }));
+
+app.get('/test-db', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM users LIMIT 1');
+    res.json(result.rows);
+  } catch (err) {
+    console.error('DB test error:', err.message); // 👈 log the actual error
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 
 // Routes
 app.use('/api', authRoutes);

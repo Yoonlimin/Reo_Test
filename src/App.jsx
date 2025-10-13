@@ -82,6 +82,7 @@ function AppContent() {
           
           {/* Modal Routes - but they render over home */}
           <Route path="/create/*" element={<Home />} />
+          
         </Routes>
       </div>
       
