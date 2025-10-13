@@ -34,15 +34,28 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '50mb' }));
 
-app.get('/test-db', async (req, res) => {
+app.get('/test-db', async (_req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM users LIMIT 1');
-    res.json(result.rows);
+    const r = await pool.query('select now() as now');
+    return res.json({ ok: true, now: r.rows[0].now });
   } catch (err) {
-    console.error('DB test error:', err.message); // 👈 log the actual error
-    res.status(500).json({ error: err.message });
+    console.error('DB test error:', {
+      message: err?.message,
+      code: err?.code,
+      detail: err?.detail,
+      hint: err?.hint,
+      stack: err?.stack
+    });
+    return res.status(500).json({
+      error: err?.message || 'unknown',
+      code: err?.code || null,
+      detail: err?.detail || null,
+      hint: err?.hint || null
+    });
   }
 });
+
+
 
 
 
