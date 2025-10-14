@@ -19,8 +19,7 @@ import contactRoutes from './routes/contactRoute.js';
 // If you're on Node < 18, uncomment the next line and `npm i node-fetch`
 // import fetch from 'node-fetch';
 
-dotenv.config({ path: './.env' });
-
+dotenv.config();
 
 const app = express();
 
