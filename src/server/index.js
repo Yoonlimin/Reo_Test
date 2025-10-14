@@ -1,3 +1,9 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dns from 'dns';
+dns.setDefaultResultOrder('ipv4first');
+
+
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -14,34 +20,47 @@ import verifyEmailRouter from './routes/verifyEmailRoute.js';
 import profilePhotoUploadRouter from './routes/profilePhotoUpload.js';
 import contactRoutes from './routes/contactRoute.js';
 
-// If you're on Node < 18, uncomment the next line and `npm i node-fetch`
+// If you're on Node < 18, uncomment and install node-fetch
 // import fetch from 'node-fetch';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load backend .env only in local dev (Render uses dashboard env)
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: path.join(__dirname, '.env') });
+}
 
 const app = express();
+app.set('trust proxy', 1);
 
-// Middleware
+// ---- CORS (allow dev + prod FE) ----
+const allowedOrigins = [
+  'http://localhost:5173',
+  // add your real FE domains below (pick the one you use)
+  'https://<your-frontend>.vercel.app',
+  'https://<your-frontend>.netlify.app',
+  'https://<your-frontend>.onrender.com',
+];
+
 app.use(cors({
 
   origin: (origin, cb) => {
-    // allow tools like curl/Postman without origin
-    if (!origin) return cb(null, true);
-
+    if (!origin) return cb(null, true); // curl/Postman
     try {
-      const host = new URL(origin).host;
+
       const ok =
-        host === "localhost:5173" ||
-        /\.trycloudflare\.com$/i.test(host); // any tunnel
-      return cb(ok ? null : new Error("Not allowed by CORS"), ok);
+        allowedOrigins.includes(origin) ||
+        /\.trycloudflare\.com$/i.test(new URL(origin).host); // dev tunnel
+      return cb(ok ? null : new Error('Not allowed by CORS'), ok);
     } catch {
-      return cb(new Error("Bad origin"), false);
+      return cb(new Error('Bad origin'), false);
     }
   },
-
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  credentials: true,
 }));
+
 app.use(express.json({ limit: '50mb' }));
 
 // Routes
@@ -57,10 +76,7 @@ app.use('/api/verify-email', verifyEmailRouter);
 app.use("/api/card", cardRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/profile-photo', profilePhotoUploadRouter);
-
-// ---------- PROXY ENDPOINTS FOR MOBILE BUSINESS CARD FIX ----------
-
-// Image proxy to handle CORS issues for business card generation
+// ---- Proxy: images ----
 app.get('/api/proxy/image', async (req, res) => {
   try {
     const { url } = req.query;
@@ -195,17 +211,14 @@ app.get('/api/proxy/font-css', async (req, res) => {
     }
   }
 });
-
-// Health check endpoint for the proxy services
-app.get('/api/proxy/health', (req, res) => {
-  res.json({ 
-    status: 'ok',
-    message: 'Proxy services are running',
-    timestamp: new Date().toISOString() 
-  });
+// ---- Health checks ----
+app.get('/healthz', (_req, res) => res.send('ok'));
+app.get('/api/proxy/health', (_req, res) => {
+  res.json({ status: 'ok', message: 'Proxy services are running', timestamp: new Date().toISOString() });
 });
 
-// Start Server
-app.listen(5000, () => {
-  console.log('Server running on http://localhost:5000');
+// ---- Start ----
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
