@@ -1,8 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import pool from './db.js';
-
 import authRoutes from './routes/authRoutes.js';
 import uploadLogoRoute from './routes/uploadLogo.js';
 import getLogoRoute from './routes/getLogo.js';
@@ -26,44 +24,25 @@ const app = express();
 // Middleware
 app.use(cors({
 
-  origin: ["http://localhost:5173"],
+  origin: (origin, cb) => {
+    // allow tools like curl/Postman without origin
+    if (!origin) return cb(null, true);
 
+    try {
+      const host = new URL(origin).host;
+      const ok =
+        host === "localhost:5173" ||
+        /\.trycloudflare\.com$/i.test(host); // any tunnel
+      return cb(ok ? null : new Error("Not allowed by CORS"), ok);
+    } catch {
+      return cb(new Error("Bad origin"), false);
+    }
+  },
 
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
 app.use(express.json({ limit: '50mb' }));
-
-app.get('/test-db', async (_req, res) => {
-  try {
-    const r = await pool.query('select now() as now');
-    return res.json({ ok: true, now: r.rows[0].now });
-  } catch (err) {
-    console.log('DATABASE_URL:', process.env.DATABASE_URL);
-    console.error('DB test error:', {
-      message: err?.message,
-      code: err?.code,
-      detail: err?.detail,
-      hint: err?.hint,
-      stack: err?.stack
-    });
-    return res.status(500).json({
-      error: err?.message || 'unknown',
-      code: err?.code || null,
-      detail: err?.detail || null,
-      hint: err?.hint || null
-    });
-  }
-});
-
-app.get('/ping', (_req, res) => {
-  res.json({ pong: true });
-});
-
-
-
-
-
 
 // Routes
 app.use('/api', authRoutes);
@@ -227,7 +206,6 @@ app.get('/api/proxy/health', (req, res) => {
 });
 
 // Start Server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+app.listen(5000, () => {
+  console.log('Server running on http://localhost:5000');
 });

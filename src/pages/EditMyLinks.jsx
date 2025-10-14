@@ -11,8 +11,9 @@ import Template3 from "../components/templates/Template3";
 import Template4 from "../components/templates/Template4";
 import Template5 from "../components/templates/Template5";
 import Template6 from "../components/templates/Template6";
+import useEditApi from "../hooks/useEditApi";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5050";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const CardComponentById = {
   1: Template1,
   2: Template2,
@@ -24,8 +25,9 @@ const CardComponentById = {
 
 const DEFAULT_STACK = `-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif`;
 
-export default function EditMyLinks() {
+export default function EditMyLinks({ mode = "personal" }) {
   const navigate = useNavigate();
+  const params = useParams()
   const { cardId: paramId } = useParams();
   const [cardId, setCardId] = useState(
     paramId || localStorage.getItem("personal_card_id") || null
@@ -63,67 +65,53 @@ export default function EditMyLinks() {
 
   const [showPhonePreview, setShowPhonePreview] = useState(true);
 
+  const api = useEditApi(mode);
+
   useEffect(() => {
     const load = async () => {
-      if (!cardId) {
-        setErr("No card selected");
-        setLoading(false);
-        return;
-      }
       try {
         setLoading(true);
         setErr("");
 
-        // Fetch base card (for preview + fallback values)
-        const baseRes = await fetch(`${API_BASE}/api/personal-card/${cardId}`, {
-          headers: { Authorization: token },
-        });
-        if (!baseRes.ok) throw new Error("Failed to load card");
-        const base = await baseRes.json();
+        const base = await api.load();
         const d = base?.data ?? base;
 
         setFullName(d.fullname ?? "");
         setJobTitle(d.job_title ?? d.jobTitle ?? "");
         setCompanyName(d.company_name ?? d.companyName ?? "");
+
+        // colors & font (team styling is merged in the hook for team mode)
         setPrimaryColor(d.primary_color ?? d.primaryColor ?? "#1F2937");
         setSecondaryColor(d.secondary_color ?? d.secondaryColor ?? "#f5f9ff");
         setFontFamily(d.font_family ?? d.fontFamily ?? DEFAULT_STACK);
-        const tId = Number(d.templateId);
-        const keyToId = {
-          template1: 1,
-          template2: 2,
-          template3: 3,
-          template4: 4,
-          template5: 5,
-          template6: 6,
-        };
-        const key = (d.component_key ?? d.componentKey ?? "").toString();
-        setTemplateId(
-          Number.isFinite(tId) && [1, 2, 3, 4, 5, 6].includes(tId)
-            ? tId
-            : keyToId[key] || 1
-        );
 
-        const logoB64 = d.logo || d.logoBase64;
+        // template id or legacy key
+        const tId = Number(d.template_id ?? d.templateId);
+        const keyToId = { template1:1, template2:2, template3:3, template4:4, template5:5, template6:6 };
+        const key = (d.component_key ?? d.componentKey ?? "").toString();
+        setTemplateId(Number.isFinite(tId) && [1,2,3,4,5,6].includes(tId) ? tId : keyToId[key] || 1);
+
+        // images
+        const logoB64  = d.logo || d.logoBase64;
         const photoB64 = d.profile_photo || d.profilePhoto;
         setLogo(logoB64 ? `data:image/png;base64,${logoB64}` : null);
         setProfilePhoto(photoB64 ? `data:image/jpeg;base64,${photoB64}` : null);
 
-        // Read contact + links directly from personal card
+        // links
         setEmail(d.email ?? "");
         setPhone(d.phone_number ?? d.phoneNumber ?? "");
         setWebsite(d.website ?? "");
         setGithub(d.github ?? "");
         setLinkedin(d.linkedin ?? "");
-      } catch (error) {
-        setErr("Failed to load card data");
+      } catch (e) {
+        setErr(e.message || "Failed to load card data");
       } finally {
         setLoading(false);
       }
     };
 
-    load();
-  }, [cardId, token]);
+     if (api?.id) load();
+ }, [mode, api?.id, token]);
 
   const saveAll = async () => {
     try {
@@ -140,11 +128,9 @@ export default function EditMyLinks() {
         linkedin,
       };
   
-      const res = await fetch(`${API_BASE}/api/personal-card/${cardId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: token },
-        body: JSON.stringify(payload),
-      });
+      // personal -> PUT /api/personal-card/:id
+      // team     -> PUT /api/teamInfo/member/:id
+      const res = await api.save(payload);
   
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
@@ -162,8 +148,12 @@ export default function EditMyLinks() {
   
 
   const closeModal = () => {
-    navigate("/home");
-  };
+    if (mode === "team") {
+      navigate(`/teams/${params.teamId}`)
+    } else {
+      navigate("/home")
+    }
+  }
 
   if (loading) {
     return (
@@ -312,48 +302,17 @@ export default function EditMyLinks() {
               </div>
             </main>
 
-            {/* Right: preview */}
+            {/* Right: preview (Phone only, no flip) */}
             <aside className="col-span-11 md:col-span-4 self-center justify-center">
-            {/* keep it visible and start near the top of the page */}
-            <div className="md:sticky md:top-24 pr-2">
-              {/* perspective on parent */}
-              <div className="relative w-full max-w-sm mx-auto" style={{ perspective: "1000px" }}>
-                <div className="text-sm text-center mb-2 text-[#0b2447] opacity-80">
-                  Click to switch to {showPhonePreview ? "Card View" : "Phone Preview"}
-                </div>
-
-                {/* flip container */}
+              <div className="md:sticky md:top-24 pr-2">
                 <div
-                  className="relative w-full h-[520px] cursor-pointer transition-transform duration-700 ease-in-out"
-                  style={{
-                    transformStyle: "preserve-3d",
-                    transform: showPhonePreview ? "rotateY(180deg)" : "rotateY(0deg)",
-                  }}
-                  onClick={() => setShowPhonePreview((prev) => !prev)}
+                  className="relative w-full max-w-sm mx-auto"
+                  style={{ perspective: "1000px" }}
                 >
-                  {/* FRONT: Card view */}
-                  <div
-                    className="absolute inset-0"
-                    style={{ backfaceVisibility: "hidden", transform: "rotateY(0deg)" }}
-                  >
-                    <div className="mx-auto w-[360px] h-[220px] rounded-xl overflow-hidden shadow relative bg-white">
-                        <CardComponent
-                          {...previewProps}
-                          side="front"
-                          style={{ width: "100%", height: "100%" }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* BACK: phone */}
-                    <div
-                      className="absolute inset-0"
-                      style={{
-                        backfaceVisibility: "hidden",
-                        transform: "rotateY(180deg)",
-                        transformOrigin: "top center",
-                      }}
-                    >
+                  {/* Title removed since there's no switching */}
+                  <div className="relative w-full h-[520px]">
+                    {/* Static phone preview (no transform, no onClick) */}
+                    <div className="absolute inset-0">
                       <div
                         style={{
                           transform: "scale(0.95)",
@@ -368,8 +327,8 @@ export default function EditMyLinks() {
                           email={email || "email@example.com"}
                           avatar={profilePhoto}
                           logo={logo}
-                          website={website} // ⬅️ add
-                          github={github} // ⬅️ add
+                          website={website}
+                          github={github}
                           linkedin={linkedin}
                         />
                       </div>
