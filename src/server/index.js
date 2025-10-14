@@ -25,12 +25,27 @@ dotenv.config({ path: './.env' });
 const app = express();
 
 // Middleware
+// Configure CORS to allow localhost plus optional domains from CORS_ORIGINS
+const defaultAllowedOrigins = ["http://localhost:5173"];
+const extraAllowedOrigins = (process.env.CORS_ORIGINS || "")
+  .split(",")
+  .map(s => s.trim())
+  .filter(Boolean);
+const allowedOrigins = [...defaultAllowedOrigins, ...extraAllowedOrigins];
+
 app.use(cors({
-
-  origin: ["http://localhost:5173"],
-
-
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    try {
+      const hostname = new URL(origin).hostname;
+      if (hostname.endsWith(".vercel.app") || hostname.endsWith(".onrender.com")) {
+        return callback(null, true);
+      }
+    } catch (_e) {}
+    return callback(new Error("Not allowed by CORS"));
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true
 }));
 app.use(express.json({ limit: '50mb' }));
@@ -40,7 +55,8 @@ app.get('/test-db', async (_req, res) => {
     const r = await pool.query('select now() as now');
     return res.json({ ok: true, now: r.rows[0].now });
   } catch (err) {
-    console.log('DATABASE_URL:', process.env.DATABASE_URL);
+    // Avoid logging full DATABASE_URL (secrets). Log a safe hint instead.
+    console.error('DB connection failed. DATABASE_URL set:', Boolean(process.env.DATABASE_URL));
     console.error('DB test error:', {
       message: err?.message,
       code: err?.code,
