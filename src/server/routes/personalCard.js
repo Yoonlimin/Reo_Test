@@ -29,7 +29,7 @@ router.post("/", verifyToken, async (req, res) => {
     try {
       const base64Data = logo.split(",")[1];
       logoBuffer = Buffer.from(base64Data, "base64");
-    } catch (e) {
+    } catch (_e) {
 
       return res.status(400).json({ error: "Invalid logo data format" });
     }

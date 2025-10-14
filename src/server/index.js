@@ -41,7 +41,7 @@ app.use(cors({
       if (hostname.endsWith(".vercel.app") || hostname.endsWith(".onrender.com")) {
         return callback(null, true);
       }
-    } catch (_e) {}
+    } catch (_e) { /* ignore malformed origins */ }
     return callback(new Error("Not allowed by CORS"));
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],

@@ -1,13 +1,14 @@
 import { Phone, Mail, User, ImageDown, Save, Building } from "lucide-react";
 
+/* eslint-disable no-unused-vars */
 export default function PhonePreview({
   name = "Sofia",
   title = "Designer",
   company = "BeLift",
   phone = "0661489477",
-  email = "email@example.com",
+  email: _email = "email@example.com",
   avatar = "/default-avatar.png",
-  logo,
+  logo: _logo,
 }) {
   const actions = [
     { label: phone, Icon: Phone },

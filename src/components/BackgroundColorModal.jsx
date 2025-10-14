@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ColorThief from "colorthief";
 import { SketchPicker } from "react-color";
@@ -58,14 +58,7 @@ export default function BackgroundColorModal() {
     if (savedColor) setSelectedColor(savedColor);
     if (savedCustom) setCustomColor(JSON.parse(savedCustom));
 
-    // helper: blob -> data URL
-    const blobToDataURL = (blob) =>
-      new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
+    // (removed unused blobToDataURL helper)
 
     const fetchLogoAndExtractColors = async () => {
       try {
@@ -267,22 +260,7 @@ export default function BackgroundColorModal() {
     }
   };
 
-  const goBack = () => {
-    const flow = getFlowType(); // your existing helper there
-    const state = {
-      cardType: flow === "team" ? "Team" : "Myself",
-      teamId: Number(localStorage.getItem("team_card_id")) || undefined,
-      cardId: Number(localStorage.getItem("personal_card_id")) || undefined,
-      primaryColor: cardInfo?.primary_color,
-      secondaryColor: cardInfo?.secondary_color,
-      croppedLogo: cardInfo?.logo,
-    };
-    if (flow === "team") {
-      navigate("/create/upload-info", { state });
-    } else {
-      navigate("/create/background-color", { state });
-    }
-  };
+  // Remove dead code that referenced undefined helpers/vars
 
 
   return (
@@ -353,12 +331,12 @@ export default function BackgroundColorModal() {
                   setColors((prev) => [...prev, hex]);
                   setShowPicker(false);
 
-                  // 🟡 Persist the new custom color as selected
-                  setSelectedColor(hex);
-                  persistedPrimaryColor = hex;
-                  persistedPrimaryCustomColor = customColor;
-                  localStorage.setItem("primaryColor", hex);
-                  localStorage.setItem("customPrimaryColor", JSON.stringify(customColor));
+                // 🟡 Persist the new custom color as selected
+                setSelectedColor(hex);
+                persistedSecondaryColor = hex;
+                persistedSecondaryCustomColor = customColor;
+                localStorage.setItem("secondaryColor", hex);
+                localStorage.setItem("customSecondaryColor", JSON.stringify(customColor));
                 }}
 
 

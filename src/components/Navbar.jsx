@@ -17,8 +17,8 @@ export default function Navbar({ onSave, saving, onClose }) {
     setDisplayName(name);
   }, [location.pathname]); // refresh when route changes
 
-  const isHomePage = location.pathname === "/home";
-  const isContactsPage = location.pathname === "/contacts";
+  // const isHomePage = location.pathname === "/home";
+  // const isContactsPage = location.pathname === "/contacts";
   const showEditActions = Boolean(onSave && onClose);
 
   const initials = (displayName || "")

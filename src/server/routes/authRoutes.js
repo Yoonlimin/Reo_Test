@@ -228,6 +228,7 @@ router.post('/resend-verification', async (req, res) => {
         { expiresIn: '15m' }
       );
 
+      const BASE = process.env.VITE_PUBLIC_BASE_URL || "http://localhost:5173";
       const link = `${BASE}/verify-email/${token}?redirect=true`;
 
       await sendVerificationEmail(email, link);
@@ -244,6 +245,7 @@ router.post('/resend-verification', async (req, res) => {
       { expiresIn: '15m' }
     );
 
+    const BASE = process.env.VITE_PUBLIC_BASE_URL || "http://localhost:5173";
     const link = `${BASE}/verify-email/${token}?redirect=true`;
     await sendVerificationEmail(email, link);
 

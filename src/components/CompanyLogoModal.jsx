@@ -20,7 +20,7 @@ const CompanyLogoModal = ({croppedLogo, setCroppedLogo}) => {
   const [loading, setLoading] = useState(false);
 
   // optional cleanup of the old global key so it never leaks into new cards
-  try { localStorage.removeItem("last_logo_preview"); } catch {}
+  try { localStorage.removeItem("last_logo_preview"); } catch (_e) {}
 
 
   // Get effective IDs with better fallback logic
@@ -207,7 +207,7 @@ useEffect(() => {
       // Save to localStorage for persistence (only data URLs)
       if (cropped.startsWith('data:') && cacheKey ) {
         try {
-          llocalStorage.setItem(cacheKey, cropped);
+          localStorage.setItem(cacheKey, cropped);
         } catch (e) {
           console.warn('Failed to save cropped image to localStorage:', e);
         }

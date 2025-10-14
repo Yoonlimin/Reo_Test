@@ -1,4 +1,5 @@
 // UploadInfoModal.jsx
+/* global XLSX */
 import { useState, useEffect } from "react";   // ✅ include useEffect
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";

@@ -1,5 +1,3 @@
-"use cli ent";
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -13,7 +11,7 @@ export default function ContactsPage() {
 
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
   const BASE = import.meta.env.VITE_PUBLIC_BASE_URL || window.location.origin;
-  const navigate = useNavigate();
+  // const navigate = useNavigate(); // currently unused
   const [contacts, setContacts] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);

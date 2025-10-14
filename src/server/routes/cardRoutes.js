@@ -20,7 +20,7 @@ const verifyTokenOptional = (req, _res, next) => {
 
   try {
     req.viewer = jwt.verify(token, JWT_SECRET); // same algo/secret as login
-  } catch (e) {
+  } catch (_e) {
     // leave req.viewer undefined if invalid/expired
   }
   next();

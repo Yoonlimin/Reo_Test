@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import ColorThief from "colorthief";
 import { SketchPicker } from "react-color";
