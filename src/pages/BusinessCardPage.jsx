@@ -130,23 +130,23 @@ function LinksRow({ website, github, linkedin, primary = "#1F2937" }) {
       const Icon =
         iconOnly.key === "github"
           ? () => (
-              <svg
-                viewBox="0 0 24 24"
-                className="w-[13px] h-[13px]"
-                fill="currentColor"
-              >
-                <path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.4-4-1.4-.6-1.4-1.4-1.8-1.4-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.9 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.9 0-1.3.5-2.4 1.2-3.3-.1-.3-.5-1.6.1-3.3 0 0 1-.3 3.4 1.2a11.7 11.7 0 0 1 6.2 0c2.4-1.5 3.4-1.2 3.4-1.2.6 1.7.2 3-.1 3.3.8.9 1.2 2 1.2 3.3 0 4.6-2.7 5.6-5.4 5.9.4.3.8 1 .8 2v3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z" />
-              </svg>
-            )
+            <svg
+              viewBox="0 0 24 24"
+              className="w-[13px] h-[13px]"
+              fill="currentColor"
+            >
+              <path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.4-4-1.4-.6-1.4-1.4-1.8-1.4-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.9 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.9 0-1.3.5-2.4 1.2-3.3-.1-.3-.5-1.6.1-3.3 0 0 1-.3 3.4 1.2a11.7 11.7 0 0 1 6.2 0c2.4-1.5 3.4-1.2 3.4-1.2.6 1.7.2 3-.1 3.3.8.9 1.2 2 1.2 3.3 0 4.6-2.7 5.6-5.4 5.9.4.3.8 1 .8 2v3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z" />
+            </svg>
+          )
           : () => (
-              <svg
-                viewBox="0 0 24 24"
-                className="w-[13px] h-[13px]"
-                fill="currentColor"
-              >
-                <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM.5 8h4V24h-4V8zM8 8h3.8v2.2h.1C12.7 8.9 14.2 8 16.3 8 21 8 22 10.9 22 15.1V24h-4v-7.7c0-1.8 0-4.1-2.5-4.1s-2.9 2-2.9 4v7.8H8V8z" />
-              </svg>
-            );
+            <svg
+              viewBox="0 0 24 24"
+              className="w-[13px] h-[13px]"
+              fill="currentColor"
+            >
+              <path d="M4.98 3.5C4.98 4.88 3.86 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM.5 8h4V24h-4V8zM8 8h3.8v2.2h.1C12.7 8.9 14.2 8 16.3 8 21 8 22 10.9 22 15.1V24h-4v-7.7c0-1.8 0-4.1-2.5-4.1s-2.9 2-2.9 4v7.8H8V8z" />
+            </svg>
+          );
       return (
         <div className="w-full rounded-xl p-2 mb-3 border bg-white/70 border-white/80">
           <div className="grid grid-cols-3 gap-1 items-center">
@@ -455,6 +455,21 @@ END:VCARD`;
     };
   };
 
+  const waitForImagesToLoad = (element) => {
+  const images = element.querySelectorAll('img');
+  const imagePromises = Array.from(images).map(img => {
+    // Check if the image is already loaded (complete)
+    if (img.complete) return Promise.resolve();
+    
+    // If not complete, create a promise that resolves on load or error
+    return new Promise((resolve) => {
+      img.onload = resolve;
+      img.onerror = resolve; // Resolve even on error to prevent indefinite hanging
+    });
+  });
+  return Promise.all(imagePromises);
+};
+
   const handleSaveBusinessCard = async () => {
     if (!card || !card.template) {
       alert("Card data or template is missing.");
@@ -500,9 +515,10 @@ END:VCARD`;
       </>
     );
 
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     const frontEl = container.querySelector("#card-front-capture");
+    await waitForImagesToLoad(frontEl);
     const backEl = container.querySelector("#card-back-capture");
 
     const captureOptions = {
@@ -520,47 +536,59 @@ END:VCARD`;
       new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => resolve(img);
-        img.onerror = reject;
+        img.onerror = () => reject(new Error('Failed to load captured image data URI.')); // Reject on error
         img.src = src;
+
+        // Add a timeout for safety, in case onerror/onload never fire
+        setTimeout(() => reject(new Error('Image load timeout for Data URL.')), 5000);
       });
 
-    const [frontImg, backImg] = await Promise.all([
-      loadImg(frontDataUrl),
-      loadImg(backDataUrl),
-    ]);
+    try {
+      const [frontImg, backImg] = await Promise.all([
+        loadImg(frontDataUrl),
+        loadImg(backDataUrl),
+      ]);
 
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const GAP = 30;
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const GAP = 30;
 
-    canvas.width = Math.max(frontImg.width, backImg.width);
-    canvas.height = frontImg.height + backImg.height + GAP;
+      canvas.width = Math.max(frontImg.width, backImg.width);
+      canvas.height = frontImg.height + backImg.height + GAP;
 
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const frontX = (canvas.width - frontImg.width) / 2;
-    const backX = (canvas.width - backImg.width) / 2;
+      const frontX = (canvas.width - frontImg.width) / 2;
+      const backX = (canvas.width - backImg.width) / 2;
 
-    ctx.drawImage(frontImg, frontX, 0);
-    ctx.drawImage(backImg, backX, frontImg.height + GAP);
+      ctx.drawImage(frontImg, frontX, 0);
+      ctx.drawImage(backImg, backX, frontImg.height + GAP);
 
-    const finalDataUrl = canvas.toDataURL("image/png");
-    const fileName = `${(card.fullname || "card").replace(
-      /[^a-zA-Z0-9]/g,
-      "_"
-    )}_business_card.png`;
+      const finalDataUrl = canvas.toDataURL("image/png");
+      const fileName = `${(card.fullname || "card").replace(
+        /[^a-zA-Z0-9]/g,
+        "_"
+      )}_business_card.png`;
 
-    const link = document.createElement("a");
-    link.href = finalDataUrl;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const link = document.createElement("a");
+      link.href = finalDataUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-    // Cleanup
-    root.unmount();
-    document.body.removeChild(container);
+      // Cleanup
+      root.unmount();
+      document.body.removeChild(container);
+    } catch (e) {
+      console.error("Canvas stitching failed:", e);
+      alert(`Failed to save card. Error: ${e.message}`);
+    } finally {
+      // Cleanup MUST happen even on error/timeout
+      root.unmount();
+      document.body.removeChild(container);
+    }
   };
 
   if (!card) {
@@ -616,6 +644,7 @@ END:VCARD`;
     },
   ];
 
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F1F7FE] to-[#DDEBFA] px-4 py-20 flex flex-col justify-center items-center font-sans">
       <div className="w-full max-w-md mx-auto">
@@ -661,29 +690,25 @@ END:VCARD`;
                 // 👇 Add a helpful tooltip and opacity for disabled state
                 <div
                   title={disabled ? "Only available on mobile devices" : ""}
-                  className={`rounded-xl p-2 mb-2 flex items-center justify-between border ${
-                    dark
-                      ? "bg-transparent border-white/60"
-                      : "bg-white/70 border-white/80"
-                  } ${i % 2 !== 0 ? "flex-row-reverse" : ""} gap-1 ${
-                    disabled ? "opacity-50" : ""
-                  }`}
+                  className={`rounded-xl p-2 mb-2 flex items-center justify-between border ${dark
+                    ? "bg-transparent border-white/60"
+                    : "bg-white/70 border-white/80"
+                    } ${i % 2 !== 0 ? "flex-row-reverse" : ""} gap-1 ${disabled ? "opacity-50" : ""
+                    }`}
                 >
                   <div
-                    className={`flex-1 h-8 rounded-lg transition-transform transform px-3 flex items-center justify-center text-base font-semibold ${
-                      dark
-                        ? "bg-[#1F2937] text-white"
-                        : "bg-white text-[#1F2937] border border-slate-200"
-                    } ${!disabled && "hover:bg-opacity-90 hover:scale-105"}`}
+                    className={`flex-1 h-8 rounded-lg transition-transform transform px-3 flex items-center justify-center text-base font-semibold ${dark
+                      ? "bg-[#1F2937] text-white"
+                      : "bg-white text-[#1F2937] border border-slate-200"
+                      } ${!disabled && "hover:bg-opacity-90 hover:scale-105"}`}
                   >
                     {label}
                   </div>
                   <div
-                    className={`flex items-center justify-center rounded-lg w-8 h-8 ${
-                      dark
-                        ? "bg-white/10"
-                        : "bg-[#EDF2F7] border border-white/70"
-                    }`}
+                    className={`flex items-center justify-center rounded-lg w-8 h-8 ${dark
+                      ? "bg-white/10"
+                      : "bg-[#EDF2F7] border border-white/70"
+                      }`}
                   >
                     <Icon
                       strokeWidth={2.5}
@@ -771,8 +796,8 @@ END:VCARD`;
                     (notice.type === "success"
                       ? "Success"
                       : notice.type === "error"
-                      ? "Something went wrong"
-                      : "Heads up")}
+                        ? "Something went wrong"
+                        : "Heads up")}
                 </h3>
               </div>
 
@@ -787,11 +812,11 @@ END:VCARD`;
                   className={[
                     "px-4 py-2 rounded-lg font-medium transition shadow-sm",
                     notice.type === "success" &&
-                      "bg-green-600 text-white hover:bg-green-700",
+                    "bg-green-600 text-white hover:bg-green-700",
                     notice.type === "error" &&
-                      "bg-red-600 text-white hover:bg-red-700",
+                    "bg-red-600 text-white hover:bg-red-700",
                     (!notice.type || notice.type === "info") &&
-                      "bg-slate-900 text-white hover:bg-slate-800",
+                    "bg-slate-900 text-white hover:bg-slate-800",
                   ].join(" ")}
                 >
                   OK
