@@ -36,7 +36,8 @@ app.set('trust proxy', 1);
 
 // ---- CORS (allow dev + prod FE) ----
 const allowedOrigins = [
-  'http://localhost:5173',
+  'http://localhost:4173',
+  
   // add your real FE domains below (pick the one you use)
   'https://<your-frontend>.vercel.app',
   'https://<your-frontend>.netlify.app',
