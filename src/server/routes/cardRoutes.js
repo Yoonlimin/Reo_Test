@@ -12,7 +12,7 @@ const verifyTokenOptional = (req, _res, next) => {
   const token = auth.split(' ')[1];
   if (!token) return next();
 
-  const JWT_SECRET = process.env.JWT_SECRET_KEY; // keep consistent with auth
+  const JWT_SECRET = process.env.JWT_SECRET; // <-- no fallback!
   if (!JWT_SECRET) {
     console.warn("JWT_SECRET is not set; cannot verify viewer token.");
     return next();
