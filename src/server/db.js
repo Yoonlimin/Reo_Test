@@ -2,7 +2,7 @@
 import path from "path";
 import { fileURLToPath } from "url";
 import dns from "dns";
-dns.setDefaultResultOrder("ipv4first");
+
 
 import pkg from "pg";
 const { Pool } = pkg;
@@ -44,6 +44,7 @@ const pool = new Pool({
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 15_000,
   family: 4
+  
 });
 
 // Log unexpected pool errors
