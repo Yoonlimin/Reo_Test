@@ -43,6 +43,7 @@ const pool = new Pool({
   max: 10,                // max concurrent connections
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 15_000,
+  family: 4
 });
 
 // Log unexpected pool errors
