@@ -18,7 +18,7 @@ app.use(express.json());
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-dotenv.config();
+dotenv.config({ path: './.env' });
 
 const router = express.Router();
 
