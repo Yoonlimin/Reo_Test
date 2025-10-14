@@ -37,10 +37,10 @@ app.set('trust proxy', 1);
 // ---- CORS (allow dev + prod FE) ----
 const allowedOrigins = [
   'http://localhost:4173',
+  'https://reo-test.vercel.app',
+  'https://reo-deploy-test.onrender.com'
   // add your real FE domains below (pick the one you use)
-  'https://<your-frontend>.vercel.app',
-  'https://<your-frontend>.netlify.app',
-  'https://<your-frontend>.onrender.com',
+  
 ];
 
 app.use(cors({
