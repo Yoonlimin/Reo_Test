@@ -25,9 +25,9 @@ function getBasePublicUrl(req) {
   const proto = (req.headers["x-forwarded-proto"] || req.protocol || "http");
   const host  = (req.headers["x-forwarded-host"]  || req.get("host") || "");
 
-  // DEV fallback: if the request hit the API on :5000, serve the SPA on :5173
+  // DEV fallback: if the request hit the API on :5000, serve the SPA on :4173
   if (/localhost:5000$/i.test(host)) {
-    return `${proto}://localhost:5173`;
+    return `${proto}://localhost:4173`;
   }
 
   // Otherwise use whatever host handled the request
