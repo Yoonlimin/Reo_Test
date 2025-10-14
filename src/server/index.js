@@ -56,6 +56,10 @@ app.get('/test-db', async (_req, res) => {
   }
 });
 
+app.get('/ping', (_req, res) => {
+  res.json({ pong: true });
+});
+
 
 
 
