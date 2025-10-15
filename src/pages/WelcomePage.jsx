@@ -70,7 +70,7 @@ const WelcomePage = () => {
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
               <button
                 className="bg-reoBlue text-white px-7 py-3 rounded-2xl font-semibold shadow-sm hover:opacity-90 transition"
-                onClick={() => navigate("/create-account")}
+                onClick={() => navigate("/signup")}
               >
                 Get Started
               </button>
@@ -203,7 +203,7 @@ const WelcomePage = () => {
         </p>
         <button
           className="bg-reoBlue text-white px-8 py-3 rounded-2xl font-semibold shadow-sm hover:opacity-90 transition"
-          onClick={() => navigate("/create-account")}
+          onClick={() => navigate("/signup")}
         >
           Start Now
         </button>

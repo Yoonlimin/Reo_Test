@@ -118,6 +118,10 @@ export default function Sidebar() {
       )}
     </div>
   );
+
+  const openSupportPersonal = () => handleNavigation("/support?mode=personal");
+  const openSupportTeams = () => handleNavigation("/support?mode=teams");
+  
   const supportSubMenu = [
     { label: "Personal Guide", onClick: openSupportPersonal, match: "?mode=personal" },
     { label: "Teams Guide", onClick: openSupportTeams, match: "?mode=teams" },
