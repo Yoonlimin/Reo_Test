@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import Cropper from "react-easy-crop"
-import getCroppedImg from "../utils/cropImage"
+import getCroppedImg from "../server/utils/cropImage"
 import useEditApi, { useAuthHeader } from "../hooks/useEditApi"
 
 import Navbar from "../components/Navbar"
