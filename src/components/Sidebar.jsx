@@ -43,11 +43,7 @@ export default function Sidebar() {
       setActivePage("Support");
       setIsMyCardsOpen(false);
       setIsSupportOpen(true);
-    } else if (p.startsWith("/settings")) {
-      setActivePage("Settings");
-      setIsMyCardsOpen(false);
-      setIsSupportOpen(false);
-    }
+    } 
   }, [location.pathname]);
 
   const handleNavigation = (path) => {
@@ -121,7 +117,7 @@ export default function Sidebar() {
 
   const openSupportPersonal = () => handleNavigation("/support?mode=personal");
   const openSupportTeams = () => handleNavigation("/support?mode=teams");
-  
+
   const supportSubMenu = [
     { label: "Personal Guide", onClick: openSupportPersonal, match: "?mode=personal" },
     { label: "Teams Guide", onClick: openSupportTeams, match: "?mode=teams" },
@@ -202,7 +198,7 @@ export default function Sidebar() {
                   </button>
                 )}
               </li>
-              {["Contacts", "Settings"].map((item) => (
+              {["Contacts"].map((item) => (
                 <li key={item}>
                   <button
                     onClick={() => handleNavigation(`/${item.toLowerCase()}`)}
@@ -289,7 +285,7 @@ export default function Sidebar() {
               </button>
             )}
           </li>
-          {["Contacts", "Settings"].map((item) => (
+          {["Contacts"].map((item) => (
             <li key={item}>
               <button
                 onClick={() => handleNavigation(`/${item.toLowerCase()}`)}
