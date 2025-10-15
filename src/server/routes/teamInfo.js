@@ -131,23 +131,15 @@ router.put("/:teamId/qrs", verifyToken, async (req, res) => {
 router.get("/first", verifyToken, async (req, res) => {
   const { teamId } = req.query;
   if (!teamId) return res.status(400).json({ error: "teamId is required" });
-  const safeTeamId = parseInt(teamId, 10);
-  if (!Number.isFinite(safeTeamId)) {
-    
-    return res.status(400).json({ error: "Invalid teamId format" });
-  }
-
-  try {
-    const q = `
-      SELECT id, team_id, fullname, job_title, email, phone_number,
-         company_name, company_address, qr
-      FROM team_members
-      WHERE team_id = $1
-      ORDER BY id ASC
-      LIMIT 1`;
-    
-    // 🔑 USE THE SANITIZED ID HERE
-    const r = await pool.query(q, [safeTeamId]); 
+  try {
+    const q = `
+      SELECT id, team_id, fullname, job_title, email, phone_number,
+         company_name, company_address, qr
+      FROM team_members
+      WHERE team_id = $1
+      ORDER BY id ASC
+      LIMIT 1`;
+    const r = await pool.query(q, [teamId]);
     if (!r.rows.length) return res.status(404).json({ error: "No members for this team" });
     return res.json({ data: r.rows[0] });
   } catch (e) {
@@ -258,20 +250,16 @@ router.get("/public/:teamId/member/:memberId", async (req, res) => {
 router.get("/member/:id", verifyToken, async (req, res) => {
   const memberId = parseInt(req.params.id, 10);
   const userId = req.user.id;
-  if (!Number.isFinite(memberId)) {
-    return res.status(400).json({ error: "Invalid member ID" });
-  }
+  if (!Number.isFinite(memberId)) return res.status(400).json({ error: "Invalid member ID" });
 
   try {
     const q = `
       SELECT 
         m.id, m.team_id, m.fullname, m.job_title, m.email, m.phone_number,
-        m.company_name, m.company_address,
-        m.website, m.linkedin, m.github,
-        m.profile_photo, m.qr,
+        m.company_name, m.company_address, m.website, m.linkedin, m.github,
+        m.font_family, m.profile_photo, m.qr,
 
         tc.template_id, tc.primary_color, tc.secondary_color, tc.logo,
-        tc.font_family AS font_family,
         t.component_key
       FROM team_members m
       JOIN team_cards   tc ON tc.teamid = m.team_id AND tc.userid = $2
@@ -286,10 +274,10 @@ router.get("/member/:id", verifyToken, async (req, res) => {
     if (row.profile_photo) row.profile_photo = Buffer.from(row.profile_photo).toString("base64");
     if (row.logo) row.logo = Buffer.from(row.logo).toString("base64");
 
-    res.json({ data: row });
+    return res.json({ data: row });
   } catch (e) {
     console.error("get member error:", e);
-    res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -309,6 +297,7 @@ router.put("/member/:id", verifyToken, async (req, res) => {
     website: b.website,
     linkedin: b.linkedin,
     github: b.github,
+    font_family: b.font_family ?? b.fontFamily,
     clearProfile: b.clearProfile === true,
   };
 
@@ -333,9 +322,10 @@ router.put("/member/:id", verifyToken, async (req, res) => {
              website         = COALESCE(NULLIF($6 ,''), website),
              linkedin        = COALESCE(NULLIF($7 ,''), linkedin),
              github          = COALESCE(NULLIF($8 ,''), github),
-             profile_photo   = CASE WHEN $9 THEN NULL ELSE profile_photo END,
+             font_family     = COALESCE(NULLIF($9 ,''), font_family),
+             profile_photo   = CASE WHEN $10 THEN NULL ELSE profile_photo END,
              updated_at      = now()
-       WHERE id = $10
+       WHERE id = $11
        RETURNING *`;
     const params = [
       vals.fullname,
@@ -346,6 +336,7 @@ router.put("/member/:id", verifyToken, async (req, res) => {
       vals.website,
       vals.linkedin,
       vals.github,
+      vals.font_family,
       vals.clearProfile,
       memberId,
     ];

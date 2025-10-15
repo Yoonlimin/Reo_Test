@@ -85,25 +85,19 @@ export default function TemplateSelectionModal() {
           const teamId = getTeamId()
           if (!teamId) throw new Error("Missing teamId for team flow")
 
-          const teamRes = await fetch(`${API_URL}/api/teamcard/${teamId}/details`, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-
-          if (!teamRes.ok) throw new Error("Failed to fetch team card details")
-          const team = (await teamRes.json()).data
-
-          let member = null
-          try {
-            const memberRes = await fetch(`${API_URL}/api/teamInfo/first?teamId=${teamId}`, {
+          const [teamRes, memberRes] = await Promise.all([
+            fetch(`${API_URL}/api/teamcard/${teamId}/details`, {
               headers: { Authorization: `Bearer ${token}` },
-            })
-            if (memberRes.ok) {
-              member = (await memberRes.json()).data
-              console.log("[v0] Fetched first team member:", member)
-            }
-          } catch (e) {
-            console.log("[v0] No members found yet, using team card defaults")
-          }
+            }),
+            fetch(`${API_URL}/api/teamInfo/first?teamId=${teamId}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+          ])
+          if (!teamRes.ok) throw new Error("Failed to fetch team card details")
+          if (!memberRes.ok) throw new Error("Failed to fetch first team member")
+
+          const team = (await teamRes.json()).data
+          const member = (await memberRes.json()).data
 
           setCardInfo({
             id: member?.id,
@@ -207,7 +201,7 @@ export default function TemplateSelectionModal() {
       <div className="fixed inset-0 z-50 flex justify-center items-center bg-white/30 backdrop-blur-sm">
         <div className="bg-white rounded-xl p-8 shadow-xl">Loading…</div>
       </div>
-    )
+    );
   }
 
   const templateMap = {
@@ -314,15 +308,19 @@ export default function TemplateSelectionModal() {
         secondaryColor: cardInfo.secondary_color,
         logo: compressedLogo,
         qr: qrDataUrl,
+
+        
+
       }
+
 
       const res = await fetch(`${API_URL}/api/personal-card`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload),
         cache: "no-store",
-      })
-      if (!res.ok) throw new Error(`Save failed: ${res.status}`)
+      });
+      if (!res.ok) throw new Error(`Save failed: ${res.status}`);
 
       navigate("/create/preview", {
         state: {
@@ -334,6 +332,7 @@ export default function TemplateSelectionModal() {
           secondaryColor: cardInfo.secondary_color,
           croppedLogo: compressedLogo,
           qr: qrDataUrl,
+          
         },
       })
     } catch (e) {
@@ -342,7 +341,9 @@ export default function TemplateSelectionModal() {
   }
 
   // Filter templates to only show those with a corresponding component
-  const availableTemplates = templates.filter((t) => templateMap[t.component_key])
+  const availableTemplates = templates.filter(
+    (t) => templateMap[t.component_key]
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex justify-center items-center bg-white/30 backdrop-blur-sm transition-opacity duration-300">
@@ -352,19 +353,17 @@ export default function TemplateSelectionModal() {
         <p className="text-xs text-gray-500 mb-4 text-center">Pick a template. You can also customize it later.</p>
 
         <div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 overflow-y-auto pr-2 pb-4 mt-10">
-          {availableTemplates.map((t) => {
-            // Use the filtered array here
-            const T = templateMap[t.component_key]
+        {availableTemplates.map((t) => { // Use the filtered array here
+            const T = templateMap[t.component_key];
             return (
               <div
                 key={t.id}
                 onClick={() => setSelectedTemplate(t.id)}
                 className={`cursor-pointer rounded-xl border flex items-center justify-center 
                   transition-all duration-200 
-                  ${
-                    selectedTemplate === t.id
-                      ? "border-blue-500 shadow-lg bg-blue-200 "
-                      : "border-gray-300 hover:border-blue-400 hover:shadow-md hover:scale-105"
+                  ${selectedTemplate === t.id
+                    ? "border-blue-500 shadow-lg bg-blue-200 "
+                    : "border-gray-300 hover:border-blue-400 hover:shadow-md hover:scale-105"
                   }`}
               >
                 {T && cardInfo && <T {...cardInfo} companyAddress={cardInfo.company_address} />}
@@ -394,5 +393,5 @@ export default function TemplateSelectionModal() {
         </div>
       </div>
     </div>
-  )
+  );
 }
