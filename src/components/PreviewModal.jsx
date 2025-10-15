@@ -197,18 +197,23 @@ export default function PreviewModal() {
                   Card Back View
                 </div>
                 {/* --- Removed large top margins --- */}
-                <div className="w-[320px] h-[200px] rounded-xl overflow-hidden shadow bg-white">
-                  <div className="absolute inset-0">
-                    <T
-                      {...p}
-                      side="back"
-                      qr={p.qr}
-                      backShow={{ logo: false, qr: true, companyName: true }}
-                      style={{ width: "100%", height: "100%" }}
-                      className="w-full h-full"
-                    />
-                  </div>
+                <div className="w-[320px] h-[200px] rounded-xl overflow-hidden shadow bg-white relative">
+                  <T
+                    {...p}
+                    side="back"
+                    qr={p.qr}
+                    backShow={{ logo: false, qr: true, companyName: true }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      overflow: "hidden",
+                      objectFit: "contain",
+                    }}
+                    className="w-full h-full"
+                  />
                 </div>
+
+
               </div>
             </div>
             <p className="text-sm text-slate-500 mt-4 text-center">
