@@ -136,7 +136,7 @@ export default function EditCardPage({ mode = "personal", initialCardId, onClose
     if (url?.startsWith("blob:")) prevBlobUrls.current.push(url);
   };
 
-  const api = useEditApi(mode);
+  const api = useEditApi(isTeam ? "team" : "personal");
 
   useEffect(() => {
     const load = async () => {

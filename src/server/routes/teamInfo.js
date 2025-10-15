@@ -257,9 +257,10 @@ router.get("/member/:id", verifyToken, async (req, res) => {
       SELECT 
         m.id, m.team_id, m.fullname, m.job_title, m.email, m.phone_number,
         m.company_name, m.company_address, m.website, m.linkedin, m.github,
-        m.font_family, m.profile_photo, m.qr,
+        m.profile_photo, m.qr,
 
         tc.template_id, tc.primary_color, tc.secondary_color, tc.logo,
+        tc.font_family AS font_family,
         t.component_key
       FROM team_members m
       JOIN team_cards   tc ON tc.teamid = m.team_id AND tc.userid = $2
@@ -322,10 +323,9 @@ router.put("/member/:id", verifyToken, async (req, res) => {
              website         = COALESCE(NULLIF($6 ,''), website),
              linkedin        = COALESCE(NULLIF($7 ,''), linkedin),
              github          = COALESCE(NULLIF($8 ,''), github),
-             font_family     = COALESCE(NULLIF($9 ,''), font_family),
-             profile_photo   = CASE WHEN $10 THEN NULL ELSE profile_photo END,
+             profile_photo   = CASE WHEN $9 THEN NULL ELSE profile_photo END,
              updated_at      = now()
-       WHERE id = $11
+       WHERE id = $10
        RETURNING *`;
     const params = [
       vals.fullname,
@@ -336,7 +336,6 @@ router.put("/member/:id", verifyToken, async (req, res) => {
       vals.website,
       vals.linkedin,
       vals.github,
-      vals.font_family,
       vals.clearProfile,
       memberId,
     ];
