@@ -102,6 +102,7 @@ router.put("/:id", verifyToken, async (req, res) => {
 router.get("/:id/details", verifyToken, async (req, res) => {
   const { id } = req.params;
   const userId = req.user.id;
+  console.log(`Fetching details for TeamID: ${id} and UserID: ${userId}`); 
 
   try {
     const q = `
