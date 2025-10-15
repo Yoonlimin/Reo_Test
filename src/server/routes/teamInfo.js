@@ -23,7 +23,7 @@ function getBasePublicUrl(req) {
 
   // Respect proxies if present (useful in prod behind Nginx)
   const proto = (req.headers["x-forwarded-proto"] || req.protocol || "http");
-  const host  = (req.headers["x-forwarded-host"]  || req.get("host") || "");
+  const host = (req.headers["x-forwarded-host"] || req.get("host") || "");
 
   // DEV fallback: if the request hit the API on :5000, serve the SPA on :5173
   if (/localhost:5000$/i.test(host)) {
@@ -131,15 +131,22 @@ router.put("/:teamId/qrs", verifyToken, async (req, res) => {
 router.get("/first", verifyToken, async (req, res) => {
   const { teamId } = req.query;
   if (!teamId) return res.status(400).json({ error: "teamId is required" });
+  const safeTeamId = parseInt(teamId, 10);
+  if (!Number.isFinite(safeTeamId)) {
+    console.error("Invalid teamId format received:", teamId);
+    return res.status(400).json({ error: "Invalid teamId format" });
+  }
+
   try {
     const q = `
-      SELECT id, team_id, fullname, job_title, email, phone_number,
-         company_name, company_address, qr
-      FROM team_members
-      WHERE team_id = $1
-      ORDER BY id ASC
-      LIMIT 1`;
-    const r = await pool.query(q, [teamId]);
+   SELECT id, team_id, fullname, job_title, email, phone_number,
+company_name, company_address, qr
+FROM team_members
+WHERE team_id = $1
+ ORDER BY id ASC
+  LIMIT 1`;
+    // 🔑 FIX: Use the sanitized 'safeTeamId' instead of the raw query param
+    const r = await pool.query(q, [safeTeamId]);
     if (!r.rows.length) return res.status(404).json({ error: "No members for this team" });
     return res.json({ data: r.rows[0] });
   } catch (e) {
