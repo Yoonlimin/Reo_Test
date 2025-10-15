@@ -1,5 +1,8 @@
+
 "use client"
+import { useEffect, useRef, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
+
 import Template1 from "./templates/Template1"
 import Template2 from "./templates/Template2"
 import Template3 from "./templates/Template3"
@@ -46,6 +49,67 @@ const buildTemplateProps = (raw = {}) => {
 }
 
 export default function PreviewModal() {
+    const FRAME_W = 320;
+  const FRAME_H = 200;
+
+  // Auto-fit wrapper so ANY template side fits 320x200 without hiding content
+  // ⬇️ inside PreviewModal, replace your current PreviewCard with this one
+const PreviewCard = ({ side }) => {
+  const contentRef = useRef(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+
+    const measure = () => {
+      // reset scale, measure natural size
+      el.style.transform = "scale(1)";
+      const naturalW = el.scrollWidth || FRAME_W;
+      const naturalH = el.scrollHeight || FRAME_H;
+      const s = Math.min(1, FRAME_W / naturalW, FRAME_H / naturalH);
+      setScale(s);
+      el.style.transform = `scale(${s})`;
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    window.addEventListener("resize", measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  // deps: re-measure when side/template or key fields change
+  }, [side, templateKey, p.fullName, p.jobTitle, p.companyName]);
+
+  return (
+    <div className="w-[320px] h-[200px] rounded-xl overflow-hidden shadow bg-white relative">
+      <div
+        ref={contentRef}
+        style={{
+          width: FRAME_W,
+          display: "inline-block",     // ✅ ensures scrollWidth/Height are correct
+          transformOrigin: "top left",
+          transform: `scale(${scale})`,
+        }}
+      >
+        <T
+          {...p}
+          side={side}
+          // ✅ put back the back-side props so QR/company show up
+          {...(side === "back"
+            ? { qr: p.qr, backShow: { logo: false, qr: true, companyName: true } }
+            : {})}
+          style={{ width: FRAME_W, height: "auto" }}
+          className="w-[320px] h-auto"
+        />
+      </div>
+    </div>
+  );
+};
+
+
   const navigate = useNavigate()
   const { state } = useLocation() || {}
 
@@ -178,19 +242,8 @@ export default function PreviewModal() {
                   Card Front View
                 </div>
                 {/* --- Removed large top margins --- */}
-                <div className="w-[320px] h-[200px] rounded-xl overflow-hidden shadow bg-white relative">
-                  <T
-                    {...p}
-                    side="front"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      overflow: "hidden",
-                      objectFit: "contain",
-                    }}
-                    className="w-full h-full"
-                  />
-                </div>
+                <PreviewCard side="front" />
+
 
               </div>
 
@@ -201,21 +254,7 @@ export default function PreviewModal() {
                   Card Back View
                 </div>
                 {/* --- Removed large top margins --- */}
-                <div className="w-[320px] h-[200px] rounded-xl overflow-hidden shadow bg-white relative">
-                  <T
-                    {...p}
-                    side="back"
-                    qr={p.qr}
-                    backShow={{ logo: false, qr: true, companyName: true }}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      overflow: "hidden",
-                      objectFit: "contain",
-                    }}
-                    className="w-full h-full"
-                  />
-                </div>
+                <PreviewCard side="back" />
 
 
               </div>
