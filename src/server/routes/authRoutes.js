@@ -11,7 +11,7 @@ import { verifyEmail } from '../utils/verifyEmail.js';
 const app = express();
 
 app.use(cors({
-  origin: ['http://localhost:4173', 'https://reo-virtual-business-card.vercel.app'],
+  origin: ['http://localhost:4173', 'https://reo-vitual-business-card.vercel.app'],
   credentials: true
 }));
 app.use(express.json());

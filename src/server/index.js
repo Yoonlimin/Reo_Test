@@ -37,9 +37,9 @@ app.set('trust proxy', 1);
 // ---- CORS (allow dev + prod FE) ----
 const allowedOrigins = [
   'http://localhost:4173',
-  'https://reo-virtual-business-card.vercel.app',
+  'https://reo-vitual-business-card.vercel.app',
   'https://reo-deploy-test.onrender.com',
-  
+
   // add your real FE domains below (pick the one you use)
   
 ];
