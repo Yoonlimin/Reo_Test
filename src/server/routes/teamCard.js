@@ -108,7 +108,7 @@ router.get("/:id/details", verifyToken, async (req, res) => {
     const q = `
       SELECT teamid, userid, company_name, primary_color, secondary_color, font_family, logo, template_id
       FROM team_cards
-      WHERE teamid = $1 AND userid = $2
+      WHERE teamid = $1 
       LIMIT 1`;
     const r = await pool.query(q, [id, userId]);
     if (!r.rows.length) return res.status(404).json({ error: "Team card not found or unauthorized" });
