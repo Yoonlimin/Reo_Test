@@ -1,3 +1,4 @@
+// routes/uploadLogo.js
 import express from 'express';
 import multer from 'multer';
 import pool from '../db.js';
@@ -11,7 +12,6 @@ router.post('/', verifyToken, upload.single('logo'), async (req, res) => {
   try {
     const userId = req.user.id;
     const fileBuffer = req.file?.buffer;
-    // Extract cardId (which is the team_cards.id primary key)
     const { cardType, cardId, teamId } = req.body;
 
     if (!fileBuffer) return res.status(400).json({ error: 'No logo uploaded' });
@@ -28,13 +28,12 @@ router.post('/', verifyToken, upload.single('logo'), async (req, res) => {
         return res.status(404).json({ error: 'card not found or not owned by user' });
       }
     } else if (cardType === 'Team') {
-      // For Team cards, cardId refers to the team_cards.id (the Primary Key)
-      const cardNum = parseInt(cardId, 10);
-      if (!cardNum) return res.status(400).json({ error: 'cardId required for Team type' });
+      const teamNum = parseInt(teamId, 10);
+      if (!teamNum) return res.status(400).json({ error: 'teamId required' });
 
       const result = await pool.query(
-        `UPDATE team_cards SET logo = $1 WHERE id = $2`, // <-- Now using cardId to match team_cards.id
-        [fileBuffer, cardNum]
+        `UPDATE team_cards SET logo = $1 WHERE teamid = $2`,
+        [fileBuffer, teamNum]
       );
       if (result.rowCount === 0) {
         return res.status(404).json({ error: 'team card not found' });

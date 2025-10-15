@@ -1,8 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Cropper from "react-easy-crop";
-import getCroppedImg from "../server/utils/cropImage.js";
-
+import getCroppedImg from "../utils/cropImage";
 
 const CompanyLogoModal = ({croppedLogo, setCroppedLogo}) => {
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -254,7 +253,6 @@ useEffect(() => {
           alert("Missing team ID.");
           return false;
         }
-        formData.append("cardId", String(effectiveTeamId));
         formData.append("teamId", String(effectiveTeamId));
       }
 
