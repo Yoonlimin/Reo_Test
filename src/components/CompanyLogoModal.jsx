@@ -254,6 +254,7 @@ useEffect(() => {
           alert("Missing team ID.");
           return false;
         }
+        formData.append("cardId", String(effectiveTeamId));
         formData.append("teamId", String(effectiveTeamId));
       }
 
