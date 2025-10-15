@@ -178,16 +178,20 @@ export default function PreviewModal() {
                   Card Front View
                 </div>
                 {/* --- Removed large top margins --- */}
-                <div className="w-[320px] h-[200px] rounded-xl overflow-hidden shadow bg-white">
-                  <div className="absolute inset-0">
-                    <T
-                      {...p}
-                      side="front"
-                      style={{ width: "100%", height: "100%" }}
-                      className="w-full h-full"
-                    />
-                  </div>
+                <div className="w-[320px] h-[200px] rounded-xl overflow-hidden shadow bg-white relative">
+                  <T
+                    {...p}
+                    side="front"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      overflow: "hidden",
+                      objectFit: "contain",
+                    }}
+                    className="w-full h-full"
+                  />
                 </div>
+
               </div>
 
               {/* --- BACK (Updated)--- */}
