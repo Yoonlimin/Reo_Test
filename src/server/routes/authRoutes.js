@@ -11,7 +11,7 @@ import { verifyEmail } from '../utils/verifyEmail.js';
 const app = express();
 
 app.use(cors({
-  origin: ['http://localhost:4173', 'https://reo-testing.vercel.app'],
+  origin: ['http://localhost:5173', 'https://reo-testing.vercel.app', 'https://rca-wiring-adds-unix.trycloudflare.com'],
   credentials: true
 }));
 app.use(express.json());
@@ -25,7 +25,7 @@ const router = express.Router();
 
 // Signup Route
 router.post('/signup', async (req, res) => {
-  const BASE = process.env.VITE_PUBLIC_BASE_URL || "http://localhost:4173";
+  const BASE = process.env.VITE_PUBLIC_BASE_URL || "http://localhost:5173";
   const { fullname, email, password } = req.body;
 
   try {

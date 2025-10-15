@@ -455,34 +455,67 @@ END:VCARD`;
     };
   };
 
+  const safeFile = (name) => {
+    return (name || "card").replace(/[^a-zA-Z0-9]/g, "_");
+  };
+
+
   const waitForImagesToLoad = (element) => {
-  const images = element.querySelectorAll('img');
-  const imagePromises = Array.from(images).map(img => {
-    // Check if the image is already loaded (complete)
-    if (img.complete) return Promise.resolve();
-    
-    // If not complete, create a promise that resolves on load or error
-    return new Promise((resolve) => {
-      img.onload = resolve;
-      img.onerror = resolve; // Resolve even on error to prevent indefinite hanging
+    const images = element.querySelectorAll('img');
+    const imagePromises = Array.from(images).map(img => {
+      // Return early if already loaded
+      if (img.complete) return Promise.resolve();
+
+      // Create a promise that resolves on load or error
+      return new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = resolve; // Resolve on error too, to avoid indefinite hang
+      });
     });
-  });
-  return Promise.all(imagePromises);
-};
+    return Promise.all(imagePromises);
+  };
+
 
   const handleSaveBusinessCard = async () => {
-    if (!card || !card.template) {
-      alert("Card data or template is missing.");
+    if (!card) {
+      alert("Card data is missing.");
       return;
     }
 
-    const TemplateComponent = templateMap[card.template];
-    if (!TemplateComponent) {
-      alert(`Template "${card.template}" not found.`);
-      return;
+    // accept template, template_name, component_key, etc.
+    const rawKey =
+      card.template ??
+      card.template_name ??
+      card.component_key ??
+      card.templateKey ??
+      "";
+
+    // normalize: lower-case, strip non-alphanumerics (handles "Template-3", etc.)
+    const norm = String(rawKey).toLowerCase().replace(/[^a-z0-9]/g, "");
+    // try a few possibilities against your map
+    const keyCandidates = [
+      rawKey,                 // e.g. "Template3"
+      norm,                   // e.g. "template3" or "templatevmes"
+      `template${norm}`,      // e.g. "3" -> "template3"
+    ];
+
+    let TemplateComponent = Template1; // safe default
+    for (const k of keyCandidates) {
+      if (k && templateMap[k]) {
+        TemplateComponent = templateMap[k];
+        break;
+      }
     }
 
-    // Create hidden container
+    // proceed (no alert anymore)
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+    const LOGICAL_W = 350;
+    const LOGICAL_H = 200;
+    const GAP = 30;
+    const PIXEL_RATIO = 2; // For high-res capture
+    const DESIRED_GAP_LOGICAL_PX = 10;
+
+    // Create hidden container and render target
     const container = document.createElement("div");
     container.style.position = "absolute";
     container.style.top = "-9999px";
@@ -490,24 +523,27 @@ END:VCARD`;
     document.body.appendChild(container);
 
     const root = ReactDOM.createRoot(container);
-    const LOGICAL_W = 350;
-    const LOGICAL_H = 200;
 
+    // Unique IDs to ensure accurate querySelector later
+    const frontId = "card-front-capture";
+    const backId = "card-back-capture";
+
+    // --- 2. Render Component ---
     root.render(
       <>
         <div
-          id="card-front-capture"
+          id={frontId}
           style={{ width: LOGICAL_W, height: LOGICAL_H, background: "white" }}
         >
           <TemplateComponent {...card} side="front" />
         </div>
         <div
-          id="card-back-capture"
+          id={backId}
           style={{
             width: LOGICAL_W,
             height: LOGICAL_H,
             background: "white",
-            marginTop: "20px",
+            marginTop: "0px", // Use variable for consistency
           }}
         >
           <TemplateComponent {...card} side="back" />
@@ -515,35 +551,51 @@ END:VCARD`;
       </>
     );
 
-    await new Promise((resolve) => setTimeout(resolve, 50));
-
-    const frontEl = container.querySelector("#card-front-capture");
-    await waitForImagesToLoad(frontEl);
-    const backEl = container.querySelector("#card-back-capture");
-
-    const captureOptions = {
-      pixelRatio: 2,
-      backgroundColor: "#ffffff",
-      cacheBust: true,
-    };
-
-    const [frontDataUrl, backDataUrl] = await Promise.all([
-      toPng(frontEl, captureOptions),
-      toPng(backEl, captureOptions),
-    ]);
-
-    const loadImg = (src) =>
-      new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error('Failed to load captured image data URI.')); // Reject on error
-        img.src = src;
-
-        // Add a timeout for safety, in case onerror/onload never fire
-        setTimeout(() => reject(new Error('Image load timeout for Data URL.')), 5000);
-      });
+    let frontDataUrl, backDataUrl;
+    let finalDataUrl;
 
     try {
+      // Wait briefly for React to commit the changes to the DOM
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      const frontEl = container.querySelector(`#${CSS.escape(frontId)}`);
+      const backEl = container.querySelector(`#${CSS.escape(backId)}`);
+
+      // CRITICAL FIX: Wait for all images (Logo, QR, Profile) to load
+      await waitForImagesToLoad(container);
+
+      // --- 3. Load Fonts via Proxy (CRITICAL FOR ACCURATE FONT RENDERING) ---
+      const fontUrl = 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;800&display=swap';
+      let fontCss = '';
+      try {
+        const response = await fetch(`${API_URL}/api/proxy/font-css?url=${encodeURIComponent(fontUrl)}`);
+        if (response.ok) fontCss = await response.text();
+      } catch (e) {
+        console.warn("Could not load font CSS via proxy. Using default styles.", e);
+      }
+
+      const captureOptions = {
+        pixelRatio: PIXEL_RATIO,
+        backgroundColor: "#ffffff",
+        cacheBust: true,
+        fontEmbedCSS: fontCss, // Inject the proxied font CSS
+      };
+
+      // --- 4. Capture Elements ---
+      [frontDataUrl, backDataUrl] = await Promise.all([
+        toPng(frontEl, captureOptions),
+        toPng(backEl, captureOptions),
+      ]);
+
+      // --- 5. Stitch Images (Use robust Image objects) ---
+      const loadImg = (src) =>
+        new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => reject(new Error('Captured image data failed to load.'));
+          img.src = src;
+        });
+
       const [frontImg, backImg] = await Promise.all([
         loadImg(frontDataUrl),
         loadImg(backDataUrl),
@@ -551,43 +603,85 @@ END:VCARD`;
 
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      const GAP = 30;
 
-      canvas.width = Math.max(frontImg.width, backImg.width);
-      canvas.height = frontImg.height + backImg.height + GAP;
+      // Canvas dimensions (based on 2x pixelRatio)
+      const PADDED_W = LOGICAL_W * PIXEL_RATIO;
+      const PADDED_H = LOGICAL_H * PIXEL_RATIO;
+
+      // Only calculate the gap needed for the canvas once, scaled up
+      const CANVAS_GAP = DESIRED_GAP_LOGICAL_PX * PIXEL_RATIO; // 30 * 2 = 60 pixels on the 2x canvas
+
+      canvas.width = PADDED_W;
+      canvas.height = PADDED_H * 2 + CANVAS_GAP; // Total height
 
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      const frontX = (canvas.width - frontImg.width) / 2;
-      const backX = (canvas.width - backImg.width) / 2;
+      // Draw front card
+      ctx.drawImage(frontImg, 0, 0, PADDED_W, PADDED_H);
 
-      ctx.drawImage(frontImg, frontX, 0);
-      ctx.drawImage(backImg, backX, frontImg.height + GAP);
+      // Draw back card: PADDED_H is the front card's height, CANVAS_GAP is the space
+      ctx.drawImage(backImg, 0, PADDED_H + CANVAS_GAP, PADDED_W, PADDED_H);
 
-      const finalDataUrl = canvas.toDataURL("image/png");
-      const fileName = `${(card.fullname || "card").replace(
-        /[^a-zA-Z0-9]/g,
-        "_"
-      )}_business_card.png`;
+      finalDataUrl = canvas.toDataURL("image/png");
 
-      const link = document.createElement("a");
-      link.href = finalDataUrl;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      // --- 6. Trigger Download ---
+      const fileName = `${safeFile(card.fullname)}_business_card.png`;
 
-      // Cleanup
-      root.unmount();
-      document.body.removeChild(container);
-    } catch (e) {
-      console.error("Canvas stitching failed:", e);
-      alert(`Failed to save card. Error: ${e.message}`);
+      // Check for mobile/iOS to use the robust method
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        // Turn dataURL into a File for Web Share
+        const blob = await (await fetch(finalDataUrl)).blob();
+        const fname = `${safeFile(card.fullname)}_business_card.png`;
+        const file = new File([blob], fname, { type: 'image/png' });
+
+        // 1) Web Share API (best on iOS/Android)
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({ files: [file], title: 'Business Card' });
+            return;
+          } catch (e) {
+            // user canceled or share failed -> continue to fallback
+          }
+        }
+
+        // 2) Open a blank tab synchronously (avoids popup block)
+        // NOTE: do this at the *start* of the click handler ideally;
+        // if you keep it here, many browsers still allow it, but moving it
+        // to the very top gives best results.
+        const win = window.open('', '_blank');
+        if (win) {
+          // set something while we render
+          win.document.title = 'Preparing download...';
+          // switch to the data URL after capture
+          win.location.href = finalDataUrl;
+          return;
+        }
+
+        // 3) Last fallback: show overlay so user can long-press and save
+        showImageOverlay(finalDataUrl, fname);
+        return;
+      } else {
+        // Desktop/Standard browser fix
+        const link = document.createElement("a");
+        link.href = finalDataUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+    } catch (err) {
+      console.error("Card capture and download failed:", err);
+      alert(`Sorry, the card download failed. Error: ${err.message}.`);
     } finally {
-      // Cleanup MUST happen even on error/timeout
-      root.unmount();
-      document.body.removeChild(container);
+      // --- 7. Cleanup (MUST run) ---
+      try { root.unmount(); } catch { }
+      if (container && document.body.contains(container)) {
+        document.body.removeChild(container);
+      }
     }
   };
 
@@ -643,7 +737,6 @@ END:VCARD`;
       iconColor: "text-[#1F2937]",
     },
   ];
-
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F1F7FE] to-[#DDEBFA] px-4 py-20 flex flex-col justify-center items-center font-sans">

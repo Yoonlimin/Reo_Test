@@ -36,9 +36,10 @@ app.set('trust proxy', 1);
 
 // ---- CORS (allow dev + prod FE) ----
 const allowedOrigins = [
-  'http://localhost:4173',
+  'http://localhost:5173',
   'https://reo-testing.vercel.app',
-  'https://reo-deploy-test.onrender.com'
+  'https://reo-deploy-test.onrender.com',
+  "https://rca-wiring-adds-unix.trycloudflare.com"
   // add your real FE domains below (pick the one you use)
   
 ];
