@@ -5,8 +5,8 @@ import jwt from 'jsonwebtoken';
 import pool from '../db.js';
 import dotenv from 'dotenv';
 import sgMail from '@sendgrid/mail';
-import sendVerificationEmail from '../server/utils/sendVerificationEmail.js';
-import { verifyEmail } from '../server/utils/verifyEmail.js';
+import sendVerificationEmail from '../utils/sendVerificationEmail.js';
+import { verifyEmail } from '../utils/verifyEmail.js';
 
 const app = express();
 
