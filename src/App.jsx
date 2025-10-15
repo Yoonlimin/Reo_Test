@@ -22,15 +22,16 @@ import ContactsPage from "./pages/ContactsPage";
 import TeamMembersPage from "./pages/TeamMembersPage";
 import EditMyLinks from "./pages/EditMyLinks";
 import EditContactSide from "./pages/EditContactSide";
+import Support from "./pages/Support";
 
 // Component to handle body scroll lock
 function ScrollController() {
   const location = useLocation();
-  
+
   useEffect(() => {
     // Check if current route is a modal route
     const isModalRoute = location.pathname.startsWith('/create/');
-    
+
     if (isModalRoute) {
       // Lock body scroll when modal is open
       document.body.style.overflow = 'hidden';
@@ -40,7 +41,7 @@ function ScrollController() {
       document.body.style.overflow = 'unset';
       document.body.style.paddingRight = '0px';
     }
-    
+
     // Cleanup on unmount
     return () => {
       document.body.style.overflow = 'unset';
@@ -54,11 +55,11 @@ function ScrollController() {
 function AppContent() {
   const location = useLocation();
   const isModalRoute = location.pathname.startsWith('/create/');
-  
+
   return (
     <>
       <ScrollController />
-      
+
       {/* Main Routes */}
       <div className={isModalRoute ? 'blur-sm' : ''}>
         <Routes>
@@ -84,14 +85,16 @@ function AppContent() {
           {/* ✅ TEAM MEMBER EDIT ROUTES */}
           <Route path="/edit/team/:teamId/member/:memberId" element={<EditCardPage mode="team" />} />
           <Route path="/edit/team/:teamId/member/:memberId/about" element={<EditCardPage mode="team" />} />
-          <Route path="/edit/team/:teamId/member/:memberId/contact" element={<EditContactSide mode="team" />} />
+          {/* ✅ TEAM-LEVEL STYLING ROUTE (no specific member) */}
+          <Route path="/edit/team/:teamId/contact" element={<EditContactSide mode="team-styling" />} />
           <Route path="/edit/team/:teamId/member/:memberId/mylinks" element={<EditMyLinks mode="team" />} />
-          
+          <Route path="/support" element={<Support />} />
+
           {/* Modal Routes - but they render over home */}
           <Route path="/create/*" element={<Home />} />
         </Routes>
       </div>
-      
+
       {/* Modal Overlays - only render when on modal routes */}
       {isModalRoute && (
         <Routes>

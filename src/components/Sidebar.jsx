@@ -9,6 +9,7 @@ export default function Sidebar() {
 
   const [activePage, setActivePage] = useState("My Cards");
   const [isMyCardsOpen, setIsMyCardsOpen] = useState(false);
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [open, setOpen] = useState(false);
 
   // team edit detection
@@ -33,15 +34,19 @@ export default function Sidebar() {
     if (p === "/" || p.startsWith("/edit")) {
       setActivePage("My Cards");
       setIsMyCardsOpen(true);
+      setIsSupportOpen(false);
     } else if (p.startsWith("/contacts")) {
       setActivePage("Contacts");
       setIsMyCardsOpen(false);
+      setIsSupportOpen(false);
     } else if (p.startsWith("/support")) {
       setActivePage("Support");
       setIsMyCardsOpen(false);
+      setIsSupportOpen(true);
     } else if (p.startsWith("/settings")) {
       setActivePage("Settings");
       setIsMyCardsOpen(false);
+      setIsSupportOpen(false);
     }
   }, [location.pathname]);
 
@@ -96,9 +101,8 @@ export default function Sidebar() {
     return (
       <button
         onClick={onClick}
-        className={`w-full text-left px-4 py-2 text-[#0b2447] transition-colors ${
-          active ? "bg-[#d4eafd] font-semibold" : "hover:bg-[#f2f7fd]"
-        }`}
+        className={`w-full text-left px-4 py-2 text-[#0b2447] transition-colors ${active ? "bg-[#d4eafd] font-semibold" : "hover:bg-[#f2f7fd]"
+          }`}
       >
         {label}
       </button>
@@ -114,7 +118,27 @@ export default function Sidebar() {
       )}
     </div>
   );
+  const supportSubMenu = [
+    { label: "Personal Guide", onClick: openSupportPersonal, match: "?mode=personal" },
+    { label: "Teams Guide", onClick: openSupportTeams, match: "?mode=teams" },
+  ];
 
+  const renderSupportSubMenu = () => (
+    <div className="mt-2 ml-2 border border-[#c7def3] bg-white rounded-lg shadow-sm overflow-hidden">
+      {supportSubMenu.map((item) => (
+        <button
+          key={item.label}
+          onClick={item.onClick}
+          className={`w-full text-left px-4 py-2 text-[#0b2447] transition-colors ${location.search.includes(item.match)
+              ? "bg-[#d4eafd] font-semibold"
+              : "hover:bg-[#f2f7fd]"
+            }`}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
   return (
     <>
       {/* Mobile toggle */}
@@ -126,7 +150,7 @@ export default function Sidebar() {
           {open ? "✕ Close Menu" : "☰"}
         </button>
       </div>
-  
+
       {/* Mobile drawer */}
       {open && (
         <div className="fixed inset-x-0 top-24 bottom-0 z-[60]" onClick={() => setOpen(false)}>
@@ -165,35 +189,61 @@ export default function Sidebar() {
                 ) : (
                   <button
                     onClick={() => handleNavigation("/home")}
-                    className={`w-full text-left px-4 py-3 text-md transition-all ${
-                      activePage === "My Cards"
+                    className={`w-full text-left px-4 py-3 text-md transition-all ${activePage === "My Cards"
                         ? "bg-white text-[#0b2447] font-semibold shadow rounded-lg"
                         : "text-[#0b2447]"
-                    }`}
+                      }`}
                   >
                     My Cards
                   </button>
                 )}
               </li>
-              {["Contacts", "Support", "Settings"].map((item) => (
+              {["Contacts", "Settings"].map((item) => (
                 <li key={item}>
                   <button
                     onClick={() => handleNavigation(`/${item.toLowerCase()}`)}
-                    className={`w-full text-left px-4 py-3 text-md transition-all ${
-                      activePage === item
+                    className={`w-full text-left px-4 py-3 text-md transition-all ${activePage === item
                         ? "bg-white text-[#0b2447] font-semibold shadow rounded-lg"
                         : "text-[#0b2447]"
-                    }`}
+                      }`}
                   >
                     {item}
                   </button>
                 </li>
               ))}
+              {/* Support (collapsible on /support) */}
+              <li>
+                {location.pathname.startsWith("/support") ? (
+                  <>
+                    <button
+                      onClick={() => setIsSupportOpen((v) => !v)}
+                      className="w-full text-left px-4 py-3 text-md rounded-lg flex items-center justify-between transition-all bg-white text-[#0b2447] font-semibold shadow"
+                    >
+                      <span>Support</span>
+                      <ChevronDown
+                        size={20}
+                        className={`transition-transform ${isSupportOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                    {isSupportOpen && renderSupportSubMenu()}
+                  </>
+                ) : (
+                  <button
+                    onClick={() => handleNavigation("/support")}
+                    className={`w-full text-left px-4 py-3 text-md transition-all ${activePage === "Support"
+                        ? "bg-white text-[#0b2447] font-semibold shadow rounded-lg"
+                        : "text-[#0b2447]"
+                      }`}
+                  >
+                    Support
+                  </button>
+                )}
+              </li>
             </ul>
           </aside>
         </div>
       )}
-  
+
       {/* Desktop sidebar */}
       <aside className="hidden md:block w-full p-4 md:w-1/5 md:ml-6 mb-6 md:mb-0 bg-[#f0f8ff] flex flex-col items-center rounded-xl shadow-md h-fit">
         <ul className="w-full space-y-2">
@@ -226,33 +276,59 @@ export default function Sidebar() {
             ) : (
               <button
                 onClick={() => handleNavigation("/home")}
-                className={`w-full text-left px-4 py-3 text-md transition-all ${
-                  activePage === "My Cards"
+                className={`w-full text-left px-4 py-3 text-md transition-all ${activePage === "My Cards"
                     ? "bg-white text-[#0b2447] font-semibold shadow rounded-lg"
                     : "text-[#0b2447]"
-                }`}
+                  }`}
               >
                 My Cards
               </button>
             )}
           </li>
-          {["Contacts", "Support", "Settings"].map((item) => (
+          {["Contacts", "Settings"].map((item) => (
             <li key={item}>
               <button
                 onClick={() => handleNavigation(`/${item.toLowerCase()}`)}
-                className={`w-full text-left px-4 py-3 text-md transition-all ${
-                  activePage === item
+                className={`w-full text-left px-4 py-3 text-md transition-all ${activePage === item
                     ? "bg-white text-[#0b2447] font-semibold shadow rounded-lg"
                     : "text-[#0b2447]"
-                }`}
+                  }`}
               >
                 {item}
               </button>
             </li>
           ))}
+          {/* Support (collapsible on /support) */}
+          <li>
+            {location.pathname.startsWith("/support") ? (
+              <>
+                <button
+                  onClick={() => setIsSupportOpen((v) => !v)}
+                  className="w-full text-left px-4 py-3 text-md rounded-lg flex items-center justify-between transition-all bg-white text-[#0b2447] font-semibold shadow"
+                >
+                  <span>Support</span>
+                  <ChevronDown
+                    size={20}
+                    className={`transition-transform ${isSupportOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+                {isSupportOpen && renderSupportSubMenu()}
+              </>
+            ) : (
+              <button
+                onClick={() => handleNavigation("/support")}
+                className={`w-full text-left px-4 py-3 text-md transition-all ${activePage === "Support"
+                    ? "bg-white text-[#0b2447] font-semibold shadow rounded-lg"
+                    : "text-[#0b2447]"
+                  }`}
+              >
+                Support
+              </button>
+            )}
+          </li>
         </ul>
       </aside>
     </>
   );
-}  
+}
 

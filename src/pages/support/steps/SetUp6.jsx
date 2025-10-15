@@ -1,91 +1,104 @@
-// src/pages/support/steps/SetUp2.jsx
+
+// src/pages/support/steps/SetUp6.jsx
 import React from "react";
 
-// OPTION A: import images via Vite bundling (recommended)
-// put files in: src/assets/support/
-// then update these paths:
-import Pic1 from "../../../assets/support/SetUp1.png";
-import Pic2 from "../../../assets/support/SetUp2.png";
-import Pic3 from "../../../assets/support/SetUp3.png";
+// OPTION A (recommended): keep images in src/assets/support/
+import Pic1 from "../../../assets/support/SetUp13.png";
+import Pic2 from "../../../assets/support/SetUp14.png";
+import Pic3 from "../../../assets/support/SetUp15.png";
 
-// OPTION B: if you prefer /public, delete the imports above and use:
-// const Pic1 = "/support/SetUp1.png";
-// const Pic2 = "/support/SetUp2.png";
-// const Pic3 = "/support/SetUp3.png";
+/*
+// OPTION B: if you prefer /public, remove the imports above and use:
+// const Pic1 = "/support/SetUp13.png";
+// const Pic2 = "/support/SetUp14.png";
+// const Pic3 = "/support/SetUp15.png";
+*/
 
-export default function SetUp2({ onPrev, onNext }) {
+export default function SetUp6({ onPrev, onNext }) {
   return (
     <div className="rounded-2xl bg-white/90 border border-[#d6e6fb] shadow-sm">
       {/* Header */}
       <div className="px-5 py-4 border-b border-[#e7f1ff]">
         <h2 className="text-xl md:text-2xl font-semibold text-[#0b2447]">
-          Step 2 — Getting started (Personal)
+          Step 6 — Editing your card & quick actions
         </h2>
         <p className="text-sm md:text-[15px] text-slate-600 mt-1">
-          Let’s get oriented. Here’s what you’ll see from the Home page to starting a new personal card.
+          Learn the three quick actions on each card, how to jump into editing,
+          and where to add your profile photo for the phone preview.
         </p>
       </div>
 
       {/* Scrollable content */}
-      <div className="px-5 md:px-6 py-5 max-h-[70vh] overflow-y-auto no-scrollbar">
+      <div className="px-5 md:px-6 py-5 max-h-[70vh] overflow-y-auto scrollbar-thin scrollbar-thumb-[#cfe3fb] scrollbar-track-transparent no-scrollbar">
         {/* Section 1 */}
         <section className="mb-8">
           <h3 className="text-base md:text-lg font-semibold text-[#0b2447] mb-3">
-            1) Home page after logging in
+            1) Card quick actions: <span className="font-medium">Edit</span>,{" "}
+            <span className="font-medium">Share</span>,{" "}
+            <span className="font-medium">Delete</span>
           </h3>
           <div className="rounded-xl overflow-hidden border border-[#d6e6fb] bg-white">
             <img
               src={Pic1}
-              alt="Home page after login"
+              alt="Card quick actions: edit, share, delete"
               className="w-full h-auto block"
               loading="lazy"
             />
           </div>
           <p className="text-sm md:text-[15px] text-slate-600 mt-3">
-            After you sign in, you arrive at the <span className="font-semibold">Home</span> page.
-            From here you can manage your cards, contacts, and settings using the left sidebar.
+            Hover over (or tap) your card to reveal the three action buttons:
+            <span className="font-semibold"> Edit</span> to update details,
+            <span className="font-semibold"> Share</span> to copy your card link,
+            and <span className="font-semibold"> Delete</span> to remove the card.
           </p>
         </section>
 
         {/* Section 2 */}
         <section className="mb-8">
           <h3 className="text-base md:text-lg font-semibold text-[#0b2447] mb-3">
-            2) Start a new card
+            2) Edit view — Virtual Card (card & phone preview)
           </h3>
           <div className="rounded-xl overflow-hidden border border-[#d6e6fb] bg-white">
             <img
               src={Pic2}
-              alt="Create New Card modal"
+              alt="Virtual Card editor with card and phone preview"
               className="w-full h-auto block"
               loading="lazy"
             />
           </div>
           <p className="text-sm md:text-[15px] text-slate-600 mt-3">
-            Click <span className="font-semibold">Create New Card</span>. A dialog opens to choose the type of card you want to create.
+            Clicking <span className="font-semibold">Edit</span> opens the
+            <span className="font-semibold"> Virtual Card</span> page. Here you
+            can update your info while seeing a live{" "}
+            <span className="font-semibold">card preview</span> and a{" "}
+            <span className="font-semibold">phone preview</span> so you know
+            exactly how your card appears when people scan your QR code.
           </p>
         </section>
 
         {/* Section 3 */}
         <section>
           <h3 className="text-base md:text-lg font-semibold text-[#0b2447] mb-3">
-            3) Choose <span className="font-semibold">Personal</span>
+            3) Add a profile picture
           </h3>
           <div className="rounded-xl overflow-hidden border border-[#d6e6fb] bg-white">
             <img
               src={Pic3}
-              alt="Choose Personal card"
+              alt="Adding profile picture reflected in phone preview"
               className="w-full h-auto block"
               loading="lazy"
             />
           </div>
           <p className="text-sm md:text-[15px] text-slate-600 mt-3">
-            Select <span className="font-semibold">Personal</span> to create your own digital business card.
-            We’ll guide you through each step next.
+            You can upload a <span className="font-semibold">profile photo</span>{" "}
+            from the editor. It instantly appears in the{" "}
+            <span className="font-semibold">phone preview</span> header, making
+            your digital card more recognizable and personal.
           </p>
         </section>
       </div>
 
-      {/* Footer nav (sticky inside card) */}
+      {/* Footer nav (sticky inside the card) */}
       <div className="px-5 md:px-6 py-4 border-t border-[#e7f1ff] flex items-center justify-between bg-white/80 rounded-b-2xl">
         <button
           onClick={onPrev}
