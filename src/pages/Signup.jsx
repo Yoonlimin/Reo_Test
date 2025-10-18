@@ -236,7 +236,7 @@ export default function Signup() {
             </button>
 
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              Welcome, {welcomeName}! 🎉
+              Welcome, {welcomeName}! 
             </h2>
             <p className="text-gray-600 mb-6">
               Your account has been created successfully.

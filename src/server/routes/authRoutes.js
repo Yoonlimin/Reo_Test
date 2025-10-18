@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import pool from '../db.js';
 import dotenv from 'dotenv';
+dotenv.config();
 import sgMail from '@sendgrid/mail';
 import sendVerificationEmail from '../utils/sendVerificationEmail.js';
 import { verifyEmail } from '../utils/verifyEmail.js';
@@ -18,7 +19,7 @@ app.use(express.json());
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-dotenv.config();
+
 
 const router = express.Router();
 
