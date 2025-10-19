@@ -85,7 +85,7 @@ export default function TeamFolderTile({
   count = 0,
   onOpen,
   onEdit,
-  onShare,
+
   onDelete,
   tileHeightClass = "h-[200px]",
 }) {
@@ -112,7 +112,7 @@ export default function TeamFolderTile({
 
   const open = () => onOpen?.(team.teamid);
   const handleEdit = (e) => { e.stopPropagation(); onEdit?.(team); };
-  const handleShare = (e) => { e.stopPropagation(); onShare?.(team); };
+
   const handleDelete = (e) => { e.stopPropagation(); onDelete?.(team); };
   const handleKeyDown = (e) => {
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); }
@@ -151,9 +151,9 @@ export default function TeamFolderTile({
         <button onClick={handleEdit} type="button" className="p-2 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60 transition-colors" aria-label="Edit team">
           <Pencil size={18} />
         </button>
-        <button onClick={handleShare} type="button" className="p-2 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60 transition-colors" aria-label="Share team">
+        {/* <button onClick={handleShare} type="button" className="p-2 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60 transition-colors" aria-label="Share team">
           <Share2 size={18} />
-        </button>
+        </button> */}
         <button onClick={handleDelete} type="button" className="p-2 rounded-full bg-red-500/60 text-white backdrop-blur-sm hover:bg-red-500/80 transition-colors" aria-label="Delete team">
           <Trash2 size={18} />
         </button>

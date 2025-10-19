@@ -128,6 +128,8 @@ export default function EditContactSide({ mode: propMode }) {
   const [templateId, setTemplateId] = useState(1)
   const [showPhonePreview, setShowPhonePreview] = useState(false)
 
+  const [lastSaved, setLastSaved] = useState(0)
+
   // cropper state
   const [cropperOpen, setCropperOpen] = useState(false)
   const [cropMode, setCropMode] = useState(null)
@@ -203,7 +205,7 @@ export default function EditContactSide({ mode: propMode }) {
       prevBlobUrls.current.forEach((u) => URL.revokeObjectURL(u))
       prevBlobUrls.current = []
     }
-  }, [mode, cardId, api.id, token])
+  }, [mode, cardId, api.id, token, lastSaved])
 
   // helpers
   const fileToDataUrl = (file) =>
@@ -388,6 +390,8 @@ export default function EditContactSide({ mode: propMode }) {
       
       setOk("Saved!")
       setTimeout(() => setOk(""), 1200)
+
+      setLastSaved(Date.now());
       setProfileFile(null)
       setLogoFile(null)
       setRemoveProfile(false)
