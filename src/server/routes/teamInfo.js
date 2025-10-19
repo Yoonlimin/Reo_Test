@@ -165,7 +165,7 @@ router.get("/:teamId/members", verifyToken, async (req, res) => {
         m.company_name,
         m.company_address,
         m.qr,
-
+        tc.font_family,
         tc.template_id,
         tc.primary_color,
         tc.secondary_color,
