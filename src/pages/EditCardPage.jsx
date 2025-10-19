@@ -110,6 +110,7 @@ export default function EditCardPage({ mode = "personal", initialCardId, onClose
   const [website, setWebsite] = useState("");
   const [github, setGithub] = useState("");
   const [linkedin, setLinkedin] = useState("");
+  
 
   const [profileImageUrl, setProfileImageUrl] = useState(null);
   const [companyLogoUrl, setCompanyLogoUrl] = useState(null);
@@ -457,7 +458,7 @@ export default function EditCardPage({ mode = "personal", initialCardId, onClose
                 {/* Picture row */}
                 <div className="p-4 border-b grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <UploadTile
-                    title="Profile Picture"
+                    title="profile photo"
                     shape="square"
                     previewUrl={profileImageUrl || DEFAULT_AVATAR}
                     onFileChange={onProfileFileChange}
@@ -584,7 +585,7 @@ export default function EditCardPage({ mode = "personal", initialCardId, onClose
                           logo={p.logoUrl || p.logo}
                           website={website} // ⬅️ add
                           github={github} // ⬅️ add
-                          linkedin={linkedin} // ⬅️ add
+                          linkedin={linkedin} // ⬅️ addy
                         />
                       </div>
                     </div>

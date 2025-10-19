@@ -182,7 +182,7 @@ const PersonalInfoModal = () => {
     formData.append("logo", blob);
 
     try {
-      const uploadRes = await fetch("http://localhost:5000/api/upload-logo", {
+      const uploadRes = await fetch(`${API_BASE}/api/upload-logo`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -395,29 +395,36 @@ const PersonalInfoModal = () => {
               <div>
                 <label className="text-sm font-semibold text-gray-700 block mb-1">Job Title</label>
                 <CreatableSelect
-                  options={jobOptions}
-                  value={jobTitle ? { value: jobTitle, label: jobTitle } : null}
-                  onChange={(opt) => setJobTitle(opt ? opt.value : "")}
-                  onCreateOption={(input) => {
-                    const newOpt = { value: input, label: input };
-                    setJobOptions((prev) => [...prev, newOpt]); // add to list
-                    setJobTitle(input);                          // select it
-                  }}
-                  isClearable
-                  placeholder="Search or type a job title…"
-                  formatCreateLabel={(input) => `Add "${input}"`}
-                  noOptionsMessage={() => "Type to search or add a new title"}
-                  className="border rounded-md text-sm"
-                  menuPortalTarget={typeof document !== "undefined" ? document.body : null}
-                  menuPosition="fixed"
-                  menuShouldScrollIntoView={false}
-                  closeMenuOnScroll={false}
-                  maxMenuHeight={240}
-                  styles={{
-                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                    menu: (base) => ({ ...base, zIndex: 9999 })
-                  }}
-                />
+  options={jobOptions}
+  value={jobTitle ? { value: jobTitle, label: jobTitle } : null}
+  onChange={(opt) => setJobTitle(opt ? opt.value : "")}
+  onCreateOption={(input) => {
+    const newOpt = { value: input, label: input };
+    setJobOptions((prev) => [...prev, newOpt]);
+    setJobTitle(input);
+  }}
+  isClearable
+  placeholder="Search or type a job title…"
+  formatCreateLabel={(input) => `Add "${input}"`}
+  /** 👇 put "Add ..." at the top */
+  createOptionPosition="first"
+  /** (optional) only show Add when it's not a duplicate & not empty */
+  isValidNewOption={(inputValue, _, options) =>
+    !!inputValue &&
+    !options.some(o => o.label.toLowerCase() === inputValue.toLowerCase())
+  }
+  /** (optional) keep normal filtering */
+  // filterOption={createFilter({ ignoreAccents: true, ignoreCase: true })}
+  menuPortalTarget={typeof document !== "undefined" ? document.body : null}
+  menuPosition="fixed"
+  menuShouldScrollIntoView={false}
+  maxMenuHeight={240}
+  styles={{
+    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+    menu: (base) => ({ ...base, zIndex: 9999 }),
+  }}
+/>
+
 
               </div>
 
