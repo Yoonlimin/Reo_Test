@@ -328,6 +328,7 @@ export default function EditContactSide({ mode: propMode }) {
         email,
         phone_number: phone,
         company_address: companyAddress,
+        font_family: fontFamily,
         clearProfile: removeProfile,
       }
 

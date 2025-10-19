@@ -44,7 +44,8 @@ router.put("/:id", verifyToken, async (req, res) => {
     template_id,         // <-- NEW
     primaryColor,
     secondaryColor,
-    logo                  // data URL (optional)
+    logo,
+    font_family                  // data URL (optional)
   } = req.body || {};
 
   // build dynamic SET clause
@@ -68,6 +69,12 @@ router.put("/:id", verifyToken, async (req, res) => {
     sets.push(`secondary_color = $${i++}`);
     vals.push(secondaryColor);
   }
+
+  if (font_family != null) {
+    sets.push(`font_family = $${i++}`);
+    vals.push(font_family);
+  }
+  
   if (logo) {
     try {
       const base64 = logo.split(",")[1];
