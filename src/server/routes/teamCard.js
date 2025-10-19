@@ -122,7 +122,7 @@ router.get("/:id/details", verifyToken, async (req, res) => {
 
   try {
     const q = `
-      SELECT teamid, userid, company_name, primary_color, secondary_color, logo, template_id
+      SELECT teamid, userid, company_name, primary_color, secondary_color, logo, template_id, font_family
       FROM team_cards
       WHERE teamid = $1 AND userid = $2
       LIMIT 1`;
