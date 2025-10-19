@@ -389,7 +389,6 @@ export default function EditContactSide({ mode: propMode }) {
       
       setOk("Saved!")
       setTimeout(() => setOk(""), 1200)
-      await fetchData()
       setProfileFile(null)
       setLogoFile(null)
       setRemoveProfile(false)
