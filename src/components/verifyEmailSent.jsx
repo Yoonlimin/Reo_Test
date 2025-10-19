@@ -45,6 +45,14 @@ export default function VerifyEmailSent() {
         <p className="text-md text-black mb-4">
           A verification link has been sent to <span className="font-semibold">{email}</span>.
         </p>
+        
+        {/* 🛠️ ADDED SPAM WARNING HERE */}
+        <p className="text-sm text-red-600 font-medium mb-4 p-2 bg-red-50 border border-red-200 rounded-lg">
+            ⚠️ If the email is not in your inbox, please check your 
+            <span className="font-bold"> SPAM or Junk folder</span>.
+        </p>
+        {/* 🛠️ END SPAM WARNING */}
+        
         <p className="text-sm text-gray-700">
           Please click the link in your email to verify your account.
         </p>
