@@ -39,6 +39,7 @@ const allowedOrigins = [
   'http://localhost:4173',
   'https://reo-virtual-business-card.vercel.app',
   'https://reo-deploy-test.onrender.com',
+  'https://reo-testttt.vercel.app'
 
   // add your real FE domains below (pick the one you use)
   
